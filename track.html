@@ -17,6 +17,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
         <script src="notifications.js"></script>
+        <script src="config.production.js"></script>
 
     </head>
     
@@ -143,7 +144,7 @@
                 spinner.style.display = "block";
         
                 try {
-                    const response = await fetch(`http://localhost:5000/api/getBooking?ticketId=${ticketId}`);
+                    const response = await fetch(`${config.backendUrl}/api/getBooking?ticketId=${ticketId}`);
                     const data = await response.json();
                     spinner.style.display = "none";
         
@@ -165,7 +166,7 @@
                     document.getElementById("transactionId").innerText = transactionId || "TXN-" + ticketId.slice(-6).toUpperCase();
         
                     new QRCode(qrcodeDiv, {
-                        text: `http://localhost:5000/verify-ticket?ticketId=${ticketId}`,
+                        text: `${config.backendUrl}/verify-ticket?ticketId=${ticketId}`,
                         width: 100,
                         height: 100
                     });

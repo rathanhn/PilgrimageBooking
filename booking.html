@@ -9,6 +9,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <script src="notifications.js"></script>
+    <script src="config.production.js"></script>
     <script src="popup-loader.js"></script>
 </head>
 <body>
@@ -197,7 +198,7 @@
     async function submitBooking(event) {
         event.preventDefault();
         try {
-            const response = await fetch("http://localhost:5000/book", {
+            const response = await fetch(config.backendUrl + "/book", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
