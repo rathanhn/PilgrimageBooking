@@ -329,11 +329,19 @@
                 return;
             }
             
+            console.log("🔍 Tracking ticket with ID:", ticketId);
+            console.log("🌐 API_BASE_URL:", AppConfig?.API_BASE_URL || "NOT LOADED!");
+            
             ticketDetails.innerHTML = "<div class='text-center'><div class='spinner-border text-primary'></div><p>Searching...</p></div>";
             
             try {
-                const response = await fetch(`${AppConfig.API_BASE_URL}/api/getBooking?ticketId=${ticketId}`);
+                const apiUrl = `${AppConfig.API_BASE_URL}/api/getBooking?ticketId=${ticketId}`;
+                console.log("📡 Fetching from:", apiUrl);
+                
+                const response = await fetch(apiUrl);
                 const data = await response.json();
+                
+                console.log("📦 Response:", data);
                 
                 if (!data.success || !data.booking) {
                     ticketDetails.innerHTML = "<div class='alert alert-danger'>❌ Booking not found. Please check the Ticket ID.</div>";

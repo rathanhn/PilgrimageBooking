@@ -144,13 +144,22 @@
         
                 spinner.style.display = "block";
         
+                console.log("🔍 Tracking ticket with ID:", ticketId);
+                console.log("🌐 AppConfig:", AppConfig);
+                console.log("🌐 API_BASE_URL:", AppConfig?.API_BASE_URL || "NOT LOADED!");
+                
                 try {
-                    const { response, data } = await AppConfig.makeApiRequest(
-                        AppConfig.getApiUrlWithParams(AppConfig.ENDPOINTS.GET_BOOKING, { ticketId })
-                    );
+                    const endpoint = AppConfig.getApiUrlWithParams(AppConfig.ENDPOINTS.GET_BOOKING, { ticketId });
+                    console.log("📡 Full URL:", endpoint);
+                    
+                    const { response, data } = await AppConfig.makeApiRequest(endpoint);
+                    
+                    console.log("📦 Response:", data);
+                    
                     spinner.style.display = "none";
         
                     if (!data.success || !data.booking) {
+                        console.error("❌ Booking not found in response:", data);
                         throw new Error("Booking not found");
                     }
         
