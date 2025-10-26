@@ -3,8 +3,9 @@
 
 const config = {
     // API Configuration
-    // ✅ Using Vercel backend URL
-    API_BASE_URL: 'https://pilgrimage-backend.vercel.app', // Your deployed backend
+    // ✅ Read from environment variable or use default
+    // For Vercel: Set VITE_API_URL in Environment Variables
+    API_BASE_URL: import.meta.env.VITE_API_URL || 'https://pilgrimage-backend.vercel.app',
     
     // API Endpoints
     ENDPOINTS: {

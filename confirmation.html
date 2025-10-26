@@ -114,10 +114,11 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:5000/api/getBooking?ticketId=${ticketId}`);
-                if (!response.ok) throw new Error("Server error");
+                // ✅ Use AppConfig for API calls
+                const { response, data } = await AppConfig.makeApiRequest(
+                    AppConfig.getApiUrlWithParams(AppConfig.ENDPOINTS.GET_BOOKING, { ticketId })
+                );
 
-                const data = await response.json();
                 console.log("Fetched Data:", data); // Debugging step
 
                 if (!data.success || !data.booking) throw new Error("Booking not found");
@@ -135,7 +136,7 @@
                 document.getElementById("transactionId").innerText = transactionId || "TXN-" + ticketId.slice(-6).toUpperCase();
 
                 new QRCode(document.getElementById("qrcode"), {
-                    text: `http://localhost:5000/verify-ticket?ticketId=${ticketId}`,
+                    text: `${AppConfig.API_BASE_URL}/verify-ticket?ticketId=${ticketId}`,
                     width: 100,
                     height: 100
                 });
