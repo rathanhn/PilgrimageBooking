@@ -40,7 +40,11 @@ document.addEventListener("click", function (event) {
   const button = document.getElementById("notificationButton");
   const icon = document.getElementById("notificationIcon");
 
-  if (panel && !panel.contains(event.target) && !button.contains(event.target) && !icon.contains(event.target)) {
+  // ✅ Add null checks to prevent errors when elements don't exist
+  if (panel && 
+      !panel.contains(event.target) && 
+      button && !button.contains(event.target) && 
+      icon && !icon.contains(event.target)) {
     panel.style.display = "none";
   }
 });

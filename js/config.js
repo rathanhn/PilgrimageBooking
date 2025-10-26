@@ -34,7 +34,10 @@ const config = {
     
     // Helper function to get API URL with parameters
     getApiUrlWithParams: function(endpoint, params) {
-        const url = new URL(this.API_BASE_URL + endpoint);
+        // Build the base URL first
+        const baseUrl = this.API_BASE_URL + endpoint;
+        const url = new URL(baseUrl);
+        
         if (params && typeof params === 'object') {
             Object.keys(params).forEach(key => {
                 if (params[key] !== null && params[key] !== undefined) {
@@ -47,7 +50,11 @@ const config = {
     
     // Helper function to make API requests
     makeApiRequest: async function(endpoint, options = {}) {
-        const url = this.getApiUrl(endpoint);
+        // If endpoint is already a full URL, use it directly. Otherwise, build the URL.
+        const url = endpoint.startsWith('http://') || endpoint.startsWith('https://') 
+            ? endpoint 
+            : this.getApiUrl(endpoint);
+            
         const defaultOptions = {
             headers: {
                 'Content-Type': 'application/json',
@@ -57,6 +64,7 @@ const config = {
         const finalOptions = { ...defaultOptions, ...options };
         
         try {
+            console.log('🌐 Making request to:', url);
             const response = await fetch(url, finalOptions);
             const data = await response.json();
             return { response, data };
