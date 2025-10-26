@@ -3,9 +3,8 @@
 
 const config = {
     // API Configuration
-    // ✅ Read from environment variable or use default
-    // For Vercel: Set VITE_API_URL in Environment Variables
-    API_BASE_URL: import.meta.env.VITE_API_URL || 'https://pilgrimage-backend.vercel.app',
+    // ✅ Using production backend URL
+    API_BASE_URL: 'https://pilgrimage-backend.vercel.app',
     
     // API Endpoints
     ENDPOINTS: {
@@ -67,6 +66,9 @@ const config = {
         }
     }
 };
+
+// Debug logging
+console.log('🔧 AppConfig initialized with API_BASE_URL:', config.API_BASE_URL);
 
 // Export for use in other files
 if (typeof module !== 'undefined' && module.exports) {
