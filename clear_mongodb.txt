@@ -1,0 +1,39 @@
+# MongoDB Commands to Clear All Data from Pilgrimage Bookings Database
+# Run these commands in mongosh
+
+# Step 1: Connect to MongoDB
+# mongosh
+
+# Step 2: Switch to your database
+use pilgrimage_bookings
+
+# Step 3: View all collections
+show collections
+
+# Step 4: Clear all data from each collection
+
+# Clear Bookings collection
+db.bookings.deleteMany({})
+
+# Clear Users collection  
+db.users.deleteMany({})
+
+# Clear Notifications collection
+db.notifications.deleteMany({})
+
+# Verify collections are empty
+db.bookings.countDocuments()
+db.users.countDocuments()
+db.notifications.countDocuments()
+
+# Optional: Drop all collections to completely remove them
+# db.bookings.drop()
+# db.users.drop()
+# db.notifications.drop()
+
+# Optional: Drop the entire database (use with caution!)
+# use pilgrimage_bookings
+# db.dropDatabase()
+
+# Exit mongosh
+exit

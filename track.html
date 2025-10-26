@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%;">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Track Your Ticket</title>
+    
+        <!-- Bootstrap & Style -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://kit.fontawesome.com/519836b792.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+    
+        <!-- jsPDF (required for PDF generation) -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+        <!-- QR Code Generator -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+        <script src="notifications.js"></script>
+        <script src="js/config.js"></script>
+
+    </head>
+    
+<body style="display: flex; flex-direction: column; min-height: 100vh;">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Pilgrimage Online Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="booking.html">Book Slot</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="track.html">Track Ticket</a>
+                    </li>
+                    <!-- Login Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="loginDropdown">
+                            Login
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="loginDropdown">
+                            <li><a class="dropdown-item" href="user-dashboard.html">User Dashboard</a></li>
+                            <li><a class="dropdown-item" href="admin-dashboard.html">Admin Dashboard</a></li>
+                        </ul>
+                    </li>
+                    <!-- Notification Icon + Panel -->
+                    <div class="notification-wrapper">
+                        <div id="notificationIcon">
+                        <button onclick="toggleNotifications()" class="notification-button">
+                            <img src="bell-white.svg" alt="Notifications" class="notification-icon" />
+                            <span class="notification-count" id="notificationCount">0</span>
+                        </button>
+                        </div>
+                    
+                        <div class="notification-panel glass-panel" id="notificationPanel" style="display: none;">
+                        <h4><img src="bell-white.svg" class="mini-bell" /> Notifications</h4>
+                        <hr />
+                        <div id="notificationList" class="notification-list-box"></div>
+                        <button class="btn btn-sm btn-danger mt-4 w-100" onclick="clearAllNotifications()">Clear All</button>
+                        </div>
+                    </div>                      
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-fill">
+        <div class="container mt-5 pt-5">
+            <div class="confirmation-box text-center">
+                <h2 class="text-primary"><i class="fas fa-search"></i> Track Your Ticket</h2>
+                <p class="text-muted">Enter your Tracking ID below to view your booking details.</p>
+    
+                <div class="input-group mb-3 mt-10">
+                    <input type="text" id="trackingId" class="form-control" placeholder="Enter Tracking ID" required>
+                    <button class="btn btn-primary" type="button" id="trackBtn">Search</button>
+                </div>
+    
+                <div id="loadingSpinner" class="text-center" style="display: none;">
+                    <div class="spinner-border text-primary" role="status"></div>
+                    <p class="mt-3 text-primary">Fetching your booking details...</p>
+                </div>
+    
+                <div id="trackError" class="alert alert-danger mt-3" style="display: none;"></div>
+    
+                <div id="ticketInfo" class="mt-4" style="display: none;">
+                    <h2 class="text-success"><i class="fas fa-ticket-alt"></i> Booking Details</h2><br>
+                    <p><strong>Buyer Name:</strong> <span id="buyerName">N/A</span></p>
+                    <p><strong>Mobile No:</strong> <span id="mobileNumber">N/A</span></p>
+                    <p><strong>Email:</strong> <span id="email">N/A</span></p>
+                    <p><strong>Aadhaar No:</strong> <span id="aadharNumber">XXXX XXXX XXXX XXXX</span></p>
+                    <hr>
+                    <p><strong>Temple:</strong> <span id="temple">N/A</span></p>
+                    <p><strong>Date:</strong> <span id="date">N/A</span></p>
+                    <p><strong>Time:</strong> <span id="time">N/A</span></p>
+                    <p><strong>Ticket ID:</strong> <span id="ticketId">000000</span></p>
+                    <p><strong>Transaction ID:</strong> <span id="transactionId">N/A</span></p>
+                    <p>Show this ticket ID at the temple for verification.</p>
+    
+                    <div class="text-center">
+                        <div id="qrcode" class="my-3"></div>
+                    </div>
+    
+                    <div class="d-grid gap-2 d-md-block">
+                        <button class="btn btn-info mt-2" onclick="downloadTicket(true)"><i class="fas fa-eye"></i> Preview Ticket</button>
+                        <button class="btn btn-primary mt-2" onclick="downloadTicket()"><i class="fas fa-download"></i> Download Ticket</button>
+                        <button class="btn btn-secondary mt-2" onclick="window.print()"><i class="fas fa-print"></i> Print Ticket</button>
+                        <a href="index.html" class="btn btn-outline-dark mt-2"><i class="fas fa-home"></i> Home</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</main>
+
+    <!-- Footer -->
+    <footer class="text-center mt-5">
+        <p>&copy; 2025 Pilgrimage Online Ticket Booking System</p>
+    </footer>
+        <script>
+            document.getElementById("trackBtn").addEventListener("click", async function () {
+                const ticketId = document.getElementById("trackingId").value.trim();
+                const errorDiv = document.getElementById("trackError");
+                const spinner = document.getElementById("loadingSpinner");
+                const ticketBox = document.getElementById("ticketInfo");
+                const qrcodeDiv = document.getElementById("qrcode");
+        
+                errorDiv.style.display = "none";
+                ticketBox.style.display = "none";
+                qrcodeDiv.innerHTML = "";
+        
+                if (!ticketId) {
+                    errorDiv.innerText = "❌ Please enter a valid Tracking ID.";
+                    errorDiv.style.display = "block";
+                    return;
+                }
+        
+                spinner.style.display = "block";
+        
+                try {
+                    const { response, data } = await AppConfig.makeApiRequest(
+                        AppConfig.getApiUrlWithParams(AppConfig.ENDPOINTS.GET_BOOKING, { ticketId })
+                    );
+                    spinner.style.display = "none";
+        
+                    if (!data.success || !data.booking) {
+                        throw new Error("Booking not found");
+                    }
+        
+                    const { name, mobile, email, aadhaar, temple, date, time, transactionId } = data.booking;
+        
+                    document.getElementById("buyerName").innerText = name;
+                    document.getElementById("mobileNumber").innerText = mobile;
+                    document.getElementById("email").innerText = email;
+                    document.getElementById("aadharNumber").innerText = `XXXX XXXX XXXX ${aadhaar.slice(-4)}`;
+                    document.getElementById("aadharNumber").title = aadhaar;
+                    document.getElementById("temple").innerText = temple;
+                    document.getElementById("date").innerText = date;
+                    document.getElementById("time").innerText = time;
+                    document.getElementById("ticketId").innerText = ticketId;
+                    document.getElementById("transactionId").innerText = transactionId || "TXN-" + ticketId.slice(-6).toUpperCase();
+        
+                    new QRCode(qrcodeDiv, {
+                        text: `${AppConfig.API_BASE_URL}/verify-ticket?ticketId=${ticketId}`,
+                        width: 100,
+                        height: 100
+                    });
+        
+                    ticketBox.style.display = "block";
+        
+                } catch (err) {
+                    spinner.style.display = "none";
+                    errorDiv.innerText = "❌ Booking not found. Please check your Tracking ID.";
+                    errorDiv.style.display = "block";
+                }
+            });
+        
+            function downloadTicket(preview = false) {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF("p", "mm", [105, 200]);
+        
+                doc.setFillColor(30, 144, 255);
+                doc.rect(0, 0, 105, 20, "F");
+                doc.setTextColor(255);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(14);
+                doc.text("Pilgrimage Ticket", 20, 12);
+        
+                let yPos = 30;
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(10);
+        
+                const fields = {
+                    "Buyer Name": "buyerName",
+                    "Mobile Number": "mobileNumber",
+                    "Email": "email",
+                    "Aadhaar Number": "aadharNumber",
+                    "Temple": "temple",
+                    "Date": "date",
+                    "Time": "time",
+                    "Ticket ID": "ticketId",
+                    "Transaction ID": "transactionId"
+                };
+        
+                Object.entries(fields).forEach(([label, id]) => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        doc.text(`${label}: ${element.innerText}`, 10, yPos);
+                        yPos += 8;
+                    }
+                });
+        
+                yPos += 10;
+        
+                const qrCanvas = document.querySelector("#qrcode canvas");
+                if (qrCanvas) {
+                    doc.addImage(qrCanvas.toDataURL("image/png"), "PNG", 35, yPos, 35, 35);
+                    yPos += 50;
+                }
+        
+                doc.text("Scan the QR Code to verify your ticket", 10, yPos + 5);
+                doc.text("Visit www.pilgrimagebooking.com", 10, yPos + 15);
+        
+                const ticketId = document.getElementById("ticketId")?.innerText || "Unknown";
+        
+                if (preview) {
+                    doc.output("dataurlnewwindow");
+                } else {
+                    doc.save(`Pilgrimage_Ticket_${ticketId}.pdf`);
+                }
+            }
+    </script>
+</body>
+</html>

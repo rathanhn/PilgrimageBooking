@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>User Dashboard</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://kit.fontawesome.com/519836b792.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="style.css" />
+  <script src="notifications.js"></script>
+  <script src="popup-loader.js"></script>
+  <script src="js/config.js"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">Pilgrimage Online Ticket Booking</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <div class="notification-wrapper">
+            <button onclick="toggleNotifications()" class="notification-button" id="notificationButton">
+              <img src="bell-white.svg" alt="Notifications" class="notification-icon" id="notificationIcon" />
+              <span class="notification-count" id="notificationCount">0</span>
+            </button>
+            <div class="notification-panel glass-panel" id="notificationPanel" style="display: none;">
+              <h4><img src="bell-white.svg" class="mini-bell" /> Notifications</h4>
+              <hr />
+              <div id="notificationList" class="notification-list-box"></div>
+            </div>
+          </div>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Sidebar -->
+  <div class="sidebar d-flex flex-column justify-content-between">
+    <div>
+      <h2>User Panel</h2>
+      <ul>
+        <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+        <li><a href="#" onclick="showSection('myBookings')">My Bookings</a></li>
+        <li><a href="#" onclick="showSection('trackTicket')">Track My Ticket</a></li>
+        <li><a href="#" onclick="showSection('cancelBooking')">Cancel Booking</a></li>
+        <li><a href="#" onclick="showSection('profile')">Profile & Settings</a></li>
+      </ul>
+    </div>
+  
+    <!-- Logout Button at Bottom -->
+    <div class="p-2">
+      <button onclick="logout()" class="btn btn-secondary btn-sm btn-sm w-100 d-flex align-items-center justify-content-center ">
+        <img id="logoutsvg" src="logout2.svg" alt="Logout" width="50" height="20" style="fill: white;" />
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Top Navbar -->
+    <div class="top-navbar">
+      <h2 class="dashboard-title"><span id="dashboardUsername">Loading...</span>'s Dashboard</h2>
+    </div>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="section"><br>
+      <h3>Welcome, <span id="welcomeUsername">User</span></h3>
+      <div class="dashboard-stats">
+        <div class="stat-box total"><h4>Total Bookings</h4><p><span id="totalCount">0</span></p></div>
+        <div class="stat-box pending"><h4>Pending</h4><p><span id="pendingCount">0</span></p></div>
+        <div class="stat-box approved"><h4>Approved</h4><p><span id="approvedCount">0</span></p></div>
+        <div class="stat-box cancelled"><h4>Cancelled</h4><p><span id="cancelledCount">0</span></p></div>
+      </div>
+      <br />
+      <div class="next-visit">
+        <h4><i class="fas fa-calendar-alt"></i> Next Upcoming Visit</h4>
+        <p id="visitTemple">Temple: No upcoming visits</p>
+        <p id="visitDate">Date: -</p>
+        <p id="visitTime">Time: -</p>
+      </div>
+    </div>
+
+    <!-- My Bookings -->
+    <div id="myBookings" class="section" style="display:none;">
+      <h3>My Bookings</h3>
+      <table class="table">
+        <thead>
+          <tr><th>Ticket ID</th><th>Temple</th><th>Date</th><th>Time</th><th>Status</th></tr>
+        </thead>
+        <tbody id="bookingTableBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Track Ticket -->
+    <div id="trackTicket" class="section" style="display:none;">
+      <h3>🔎 Track My Ticket</h3>
+      <table class="table table-bordered table-hover">
+        <thead class="table-light">
+          <tr><th>Temple</th><th>Date</th><th>Status</th><th>Ticket ID</th></tr>
+        </thead>
+        <tbody id="userBookingsList"></tbody>
+      </table>
+    </div>
+
+    <!-- Cancel Booking -->
+    <div id="cancelBooking" class="section" style="display:none;">
+      <h3>Cancel My Booking</h3>
+      <table class="table table-striped table-hover">
+        <thead class="table-danger">
+          <tr><th>Temple</th><th>Date</th><th>Status</th><th>Ticket ID</th><th>Action</th></tr>
+        </thead>
+        <tbody id="cancelBookingsList"></tbody>
+      </table>
+    </div>
+
+    <!-- Profile -->
+    <div id="profile" class="section" style="display: none;">
+      <div class="glass-card p-4">
+        <h3 class="mb-3">👤 Profile & Settings</h3>
+
+        <div class="text-center mb-3">
+          <img id="profileImagePreview" src="default-profile.jpg" alt="Profile" class="rounded-circle shadow" width="100" height="100" style="object-fit: cover; border: 2px solid #ffffffcc;" />
+          <input type="file" accept="image/*" onchange="handleImageUpload(event)" class="form-control mt-2 glass-input" id="imageInput" disabled />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Name:</label>
+          <input type="text" class="form-control glass-input" id="editUsername" disabled />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Mobile:</label>
+          <input type="text" class="form-control glass-input" id="editMobile" disabled />
+        </div>
+        
+
+        <div class="mb-3">
+          <label class="form-label">Email:</label>
+          <input type="email" class="form-control glass-input" id="editEmail" disabled />
+        </div>
+
+      
+        <div class="d-flex justify-content-between mt-4">
+          <div>
+            <button class="btn btn-primary" id="editBtn" onclick="enableEditMode()">Edit</button>
+            <button class="btn btn-success d-none" id="saveBtn" onclick="saveUserProfile()">Save</button>
+            <button class="btn btn-secondary d-none" id="cancelBtn" onclick="cancelEditMode()">Cancel</button>
+          </div>
+          <button class="btn btn-danger" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+
+    <style>
+     
+    </style>
+  <script>
+    function showSection(id) {
+      document.querySelectorAll(".section").forEach(sec => sec.style.display = "none");
+      const target = document.getElementById(id);
+      if (target) target.style.display = "block";
+    }
+
+    async function loadMyBookings() {
+      try {
+        const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        console.log("🔍 Current User:", currentUser);
+        
+        if (!currentUser) {
+          console.log("❌ No user found in localStorage");
+          return;
+        }
+        
+        console.log("📧 Fetching bookings for email:", currentUser.email);
+        const url = AppConfig.getApiUrlWithParams(AppConfig.ENDPOINTS.USER_BOOKINGS, { email: currentUser.email });
+        console.log("🔗 API URL:", url);
+        const response = await fetch(url);
+        const data = await response.json();
+        console.log("📦 API Response:", data);
+        
+        const tbody = document.getElementById("bookingTableBody");
+        tbody.innerHTML = "";
+
+        if (!data.success || !data.bookings.length) {
+          console.log("⚠️ No bookings found or API error");
+          tbody.innerHTML = "<tr><td colspan='5'>No bookings found.</td></tr>";
+          // Update next visit even when no bookings
+          updateNextVisit([]);
+          return;
+        }
+
+        console.log("✅ Found bookings:", data.bookings.length);
+        data.bookings.forEach(b => {
+          tbody.innerHTML += `<tr>
+            <td>${b.ticketId}</td><td>${b.temple}</td><td>${b.date}</td><td>${b.time}</td>
+            <td class="status-${b.status.toLowerCase()}">${b.status}</td>
+          </tr>`;
+        });
+
+        updateNextVisit(data.bookings);
+      } catch (err) {
+        console.error("❌ Error loading bookings:", err);
+      }
+    }
+
+    async function loadUserBookings() {
+      try {
+        const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        console.log("🔍 loadUserBookings - Current User:", currentUser);
+        
+        if (!currentUser) {
+          console.log("❌ No user found in localStorage for loadUserBookings");
+          return;
+        }
+        
+        console.log("📧 loadUserBookings - Fetching for email:", currentUser.email);
+        const url = AppConfig.getApiUrlWithParams(`/api/bookings/user/${currentUser.email}`, {});
+        console.log("🔗 loadUserBookings API URL:", url);
+        const response = await fetch(url);
+        const bookings = await response.json();
+        console.log("📦 loadUserBookings - API Response:", bookings);
+        
+        renderBookingList(bookings, "userBookingsList", false);
+        renderBookingList(bookings, "cancelBookingsList", true);
+        // Update next visit with the bookings data
+        updateNextVisit(bookings || []);
+      } catch (err) {
+        console.error("❌ Error loading user bookings:", err);
+        // Update next visit even on error
+        updateNextVisit([]);
+      }
+    }
+
+    function renderBookingList(bookings, containerId, allowCancel) {
+      console.log(`🎨 renderBookingList called for ${containerId} with:`, bookings);
+      const tbody = document.getElementById(containerId);
+      tbody.innerHTML = "";
+    
+      if (!bookings || bookings.length === 0) {
+        console.log(`⚠️ No bookings to render for ${containerId}`);
+        tbody.innerHTML = `<tr><td colspan="${allowCancel ? 5 : 4}" class="text-center">No bookings found.</td></tr>`;
+        return;
+      }
+    
+      console.log(`✅ Rendering ${bookings.length} bookings for ${containerId}`);
+      bookings.forEach(booking => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${booking.temple}</td>
+          <td>${booking.date}</td>
+          <td class="status-${booking.status.toLowerCase()}">${booking.status}</td>
+          <td>${booking.ticketId}</td>
+          ${allowCancel 
+            ? `<td><button class="btn btn-sm btn-danger" onclick="cancelBooking('${booking._id}')"><i class="fas fa-times"></i> Cancel</button></td>` 
+            : ""
+          }
+        `;
+        tbody.appendChild(row);
+        console.log("✅ Rendered booking:", booking.ticketId);
+      });
+    }
+    
+
+    function updateNextVisit(bookings) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Normalize to start of today
+    
+      const upcoming = bookings
+        .filter(b => {
+          const visitDate = new Date(b.date);
+          visitDate.setHours(0, 0, 0, 0);
+          return visitDate >= today;
+        })
+        .sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+    
+      if (upcoming) {
+        document.getElementById("visitTemple").innerText = `Temple: ${upcoming.temple}`;
+        document.getElementById("visitDate").innerText = `Date: ${upcoming.date}`;
+        document.getElementById("visitTime").innerText = `Time: ${upcoming.time}`;
+      } else {
+        document.getElementById("visitTemple").innerText = "Temple: No upcoming visits";
+        document.getElementById("visitDate").innerText = "Date: -";
+        document.getElementById("visitTime").innerText = "Time: -";
+      }
+    }
+    
+    async function cancelBooking(ticketId) {
+      if (!confirm("Are you sure you want to cancel this booking?")) return;
+      console.log("Cancelling Booking ID:", ticketId); 
+    
+      try {
+        const { response, data: result } = await AppConfig.makeApiRequest(
+            AppConfig.getApiUrlWithParams(`/api/${ticketId}/cancel`),
+            { method: "PUT" }
+        );
+    
+        if (response.ok) {
+          document.getElementById("cancelBookingsList").innerHTML = "";
+          alert("Booking cancelled!");
+          loadUserBookings();
+          loadMyBookings();
+          loadBookingStats();
+        } else {
+          alert(result.error || "Failed to cancel booking.");
+        }
+      } catch (error) {
+        console.error("Error cancelling booking:", error);
+      }
+    }
+    
+
+    async function loadBookingStats() {
+      try {
+        const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (!currentUser) return;
+        
+        const url = AppConfig.getApiUrlWithParams(AppConfig.ENDPOINTS.USER_BOOKINGS, { email: currentUser.email });
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        // Initialize with 0 values
+        let totalCount = 0;
+        let pendingCount = 0;
+        let approvedCount = 0;
+        let cancelledCount = 0;
+        
+        // Update counts if bookings exist
+        if (data.success && data.bookings && data.bookings.length > 0) {
+          totalCount = data.bookings.length;
+          pendingCount = data.bookings.filter(b => b.status === "Pending").length;
+          approvedCount = data.bookings.filter(b => b.status === "Approved").length;
+          cancelledCount = data.bookings.filter(b => b.status === "Cancelled").length;
+        }
+        
+        // Always update the display
+        document.getElementById("totalCount").innerText = totalCount;
+        document.getElementById("pendingCount").innerText = pendingCount;
+        document.getElementById("approvedCount").innerText = approvedCount;
+        document.getElementById("cancelledCount").innerText = cancelledCount;
+      } catch (err) {
+        console.error("Error fetching stats:", err);
+        // Set to 0 on error
+        document.getElementById("totalCount").innerText = "0";
+        document.getElementById("pendingCount").innerText = "0";
+        document.getElementById("approvedCount").innerText = "0";
+        document.getElementById("cancelledCount").innerText = "0";
+      }
+    }
+
+    function loadUserProfile() {
+      const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+      if (!currentUser) return;
+      
+      document.getElementById("editUsername").value = currentUser.username || "";
+      document.getElementById("editEmail").value = currentUser.email || "";
+      document.getElementById("editMobile").value = currentUser.mobile || "";
+      if (currentUser.profileImage) {
+        document.getElementById("profileImagePreview").src = currentUser.profileImage;
+      }
+    }
+
+    function saveUserProfile() {
+      const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+      if (!currentUser) return;
+      
+      currentUser.username = document.getElementById("editUsername").value;
+      currentUser.mobile = document.getElementById("editMobile").value;
+
+      document.getElementById("dashboardUsername").innerText = currentUser.username;
+      document.getElementById("welcomeUsername").innerText = currentUser.username;
+
+      localStorage.setItem("loggedInUser", JSON.stringify(currentUser));
+      alert("Profile updated successfully!");
+    }
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const base64Image = e.target.result;
+        document.getElementById("profileImagePreview").src = base64Image;
+        const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (currentUser) {
+          currentUser.profileImage = base64Image;
+          localStorage.setItem("loggedInUser", JSON.stringify(currentUser));
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      alert("👋 Logged out successfully!");
+      window.location.href = "index.html";
+    }
+
+    function enableEditMode() {
+      document.getElementById("editUsername").disabled = false;
+      document.getElementById("editMobile").disabled = false;
+      document.getElementById("imageInput").disabled = false;
+    
+      document.getElementById("editBtn").classList.add("d-none");
+      document.getElementById("saveBtn").classList.remove("d-none");
+      document.getElementById("cancelBtn").classList.remove("d-none");
+    }
+    
+    function cancelEditMode() {
+      const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+      if (!currentUser) return;
+      
+      document.getElementById("editUsername").value = currentUser.username || "";
+      document.getElementById("editMobile").value = currentUser.mobile || "";
+      document.getElementById("profileImagePreview").src = currentUser.profileImage || "default-profile.jpg";
+    
+      document.getElementById("editUsername").disabled = true;
+      document.getElementById("editMobile").disabled = true;
+      document.getElementById("imageInput").disabled = true;
+    
+      document.getElementById("editBtn").classList.remove("d-none");
+      document.getElementById("saveBtn").classList.add("d-none");
+      document.getElementById("cancelBtn").classList.add("d-none");
+    }
+    
+    
+
+    document.addEventListener("DOMContentLoaded", () => {
+    console.log("🚀 User Dashboard DOMContentLoaded");
+    
+    // Get user from localStorage
+    const currentUser = JSON.parse(localStorage.getItem("loggedInUser"));
+    console.log("👤 User from localStorage:", currentUser);
+    
+    if (!currentUser) {
+      console.warn("❌ User not logged in!");
+
+      // Clear entire page before rendering the popup
+      document.body.innerHTML = "";
+      
+      // Load the login popup HTML
+      fetch("login-popup.html")
+        .then(res => {
+          if (!res.ok) throw new Error("Failed to load login popup");
+          return res.text();
+        })
+        .then(html => {
+          document.body.innerHTML = html;
+          if (typeof showLoginPopup === "function") {
+            showLoginPopup("user");
+          } else {
+            console.error("showLoginPopup function not defined");
+          }
+        })
+        .catch(err => {
+          alert("❌ Failed to load login popup.");
+          console.error(err);
+        });
+
+      return; // 🛑 Stop further execution
+    }
+
+    console.log("✅ User is logged in, initializing dashboard");
+    // If user is logged in, continue rendering dashboard
+    showSection("dashboard");
+    document.getElementById("dashboardUsername").innerText = currentUser.username || "User";
+    document.getElementById("welcomeUsername").innerText = currentUser.username || "User";
+
+    console.log("📊 Loading user data...");
+    loadUserProfile();
+    loadMyBookings();
+    loadBookingStats();
+    loadUserBookings();
+  });
+  </script>
+</body>
+</html>

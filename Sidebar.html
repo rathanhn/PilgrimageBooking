@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sidebars</title>
+    <link rel="stylesheet" href="style2.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,700,1,0"
+    />
+    <link
+      href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://unpkg.com/akar-icons-fonts"></script>
+    <script src="https://kit.fontawesome.com/519836b792.js" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="left">
+        <img src="logo.svg" />
+        
+        <button>
+            <a href="index.html"><i class="fa-solid fa-house"></i>
+        </button>
+        <button>
+            <a href="index.html"><i class="fa-solid fa-file"></i>
+        </button>
+
+        <button>
+            <a href="index.html"><i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+        <button>
+        <a href="index.html"></a><i class="fa-solid fa-ban"></i>
+        </button>
+        <button>
+            <a href="index.html"></a><i class="fa-regular fa-user"></i>
+            </button>
+        <div>
+          <button>
+            <i class="ai-gear"></i>
+          </button>
+          <button>
+            <i class="ai-link-out"></i>
+          </button>
+        </div>
+      </div>
+      <div class="right">
+        <div class="right-inner">
+          <div class="header">
+            <div>
+              <h2>pilgrimagebooking Ticket Booking</h2>
+              <h3>pilgrimagebooking.com</h3>
+            </div>
+            <i class="ai-chevron-vertical"></i>
+          </div>
+          <nav>
+            <button>
+            <a href="#" onclick="showSection('dashboard')">
+              <i class="ai-dashboard"></i>
+              <span>Dashboard</span>
+            </button>
+            <button>
+                <a href="#" onclick="showSection('myBookings')">
+              <i class="ai-shipping-box-v1"></i>
+              <span>My Bookings</span>
+            </button>
+            <button>
+              <i class="ai-person"></i>
+              <a href="#" onclick="showSection('trackTicket')">
+              <span>Track My Ticket</span>
+            </button>
+            <button>
+              <i class="ai-open-envelope"></i>
+              <a href="#" onclick="showSection('cancelBooking')">
+              <span>Cancel Booking</span>
+              <i class="ai-plus"></i>
+            </button>
+            <ul class="submenu">
+              <li>
+                Drafts
+                <span class="badge"> 10 </span>
+              </li>
+              <li>
+                Scheduled
+                <span class="badge"> 4 </span>
+              </li>
+              <li>
+                Published
+                <span class="badge"> 20 </span>
+              </li>
+            </ul>
+            <button>
+                <a href="#" onclick="showSection('profile')">
+              <i class="ai-image"></i>
+              <span>Profile & Settings</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Dashboard Section -->
+    <div id="dashboard" class="section"><br>
+        <h3>Welcome, <span id="welcomeUsername">User</span></h3>
+        <div class="dashboard-stats">
+            <div class="stat-box total">
+                <h4>Total Bookings</h4>
+                <p><span id="totalCount"></span></p>
+            </div>
+            <div class="stat-box pending">
+                <h4>Pending</h4>
+                <p><span id="pendingCount"></span></p>
+            </div>
+            <div class="stat-box approved">
+                <h4>Approved</h4>
+                <p><span id="approvedCount"></span></p>
+            </div>
+            <div class="stat-box cancelled">
+                <h4>Cancelled</h4>
+                <p><span id="cancelledCount"></span></p>
+            </div>
+        </div>
+        <br>
+        <div class="next-visit">
+            <h4>📅 Next Upcoming Visit</h4>
+            <p id="visitTemple">Temple: Loading...</p>
+            <p id="visitDate">Date: Loading...</p>
+            <p id="visitTime">Time: Loading...</p>
+        </div>            
+    </div>
+
+    
+  </body>
+</html>

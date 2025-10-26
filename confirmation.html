@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://kit.fontawesome.com/519836b792.js" crossorigin="anonymous"></script>
+    <script src="js/config.js"></script>
+    <script src="notifications.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #adc3f5, #adc3f5); /* soft gradient */
+            min-height: 100vh;
+            padding-top: 80px; /* Space for fixed navbar */
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top */
+        }               
+        .confirmation-box {
+            background-color:  rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 450px;
+        }
+        #qrcode {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            margin: 0 auto; /* Center horizontally */
+        }
+        .navbar.bg-primary {
+            background-color: #0d6efd !important; /* Bootstrap primary blue */
+        }
+        .navbar {
+            z-index: 1030;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* optional for visibility */
+        }                
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Pilgrimage Online Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="booking.html">Book Slot</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="track.html">Track Ticket</a>
+                    </li>
+                    <!-- Login Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="loginDropdown">
+                            Login
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="loginDropdown">
+                            <li><a class="dropdown-item" href="user-dashboard.html">User Dashboard</a></li>
+                            <li><a class="dropdown-item" href="admin-dashboard.html">Admin Dashboard</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="confirmation-box">
+        <h2 class="text-success">🎉 Booking Confirmed!</h2>
+        <br>
+        <p><strong>Buyer Name:</strong> <span id="buyerName">N/A</span></p>
+        <p><strong>Mobile No:</strong> <span id="mobileNumber">N/A</span></p>
+        <p><strong>Email:</strong> <span id="email">N/A</span></p>
+        <p><strong>Aadhar No:</strong> <span id="aadharNumber">XXXX XXXX XXXX 1234</span></p>
+        <hr>
+        <p><strong>Temple:</strong> <span id="temple">N/A</span></p>
+        <p><strong>Date:</strong> <span id="date">N/A</span></p>
+        <p><strong>Time:</strong> <span id="time">N/A</span></p>
+        <p><strong>Ticket ID:</strong> <span id="ticketId">000000</span></p>
+        <p><strong>Transaction ID:</strong> <span id="transactionId">N/A</span></p>
+        <p>Show this ticket ID at the temple for verification.</p>
+        <div id="qrcode"></div>
+        <button class="btn btn-info mt-3" onclick="downloadTicket(true)">👀 Preview Ticket</button>
+        <button class="btn btn-primary mt-3" onclick="downloadTicket()">📥 Download Ticket</button>
+        <button class="btn btn-secondary mt-3" onclick="window.print()">🖨️ Print Ticket</button>
+        <a href="index.html" class="btn btn-outline-dark mt-3">🏠 Home</a>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", async function () {
+            const { jsPDF } = window.jspdf;
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticketId = urlParams.get("ticketId");
+            
+            console.log("Extracted Ticket ID:", ticketId);
+
+            if (!ticketId || ticketId === "undefined" || ticketId.trim() === "") {
+                alert("❌ Booking not found. Please check your Ticket ID.");
+                window.location.href = "index.html";
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:5000/api/getBooking?ticketId=${ticketId}`);
+                if (!response.ok) throw new Error("Server error");
+
+                const data = await response.json();
+                console.log("Fetched Data:", data); // Debugging step
+
+                if (!data.success || !data.booking) throw new Error("Booking not found");
+
+                const { name, mobile, email, aadhaar, temple, date, time, transactionId } = data.booking;
+
+                document.getElementById("buyerName").innerText = name;
+                document.getElementById("mobileNumber").innerText = mobile;
+                document.getElementById("email").innerText = email;
+                document.getElementById("aadharNumber").innerText = `XXXX XXXX XXXX ${aadhaar.slice(-4)}`;
+                document.getElementById("temple").innerText = temple;
+                document.getElementById("date").innerText = date;
+                document.getElementById("time").innerText = time;
+                document.getElementById("ticketId").innerText = ticketId;
+                document.getElementById("transactionId").innerText = transactionId || "TXN-" + ticketId.slice(-6).toUpperCase();
+
+                new QRCode(document.getElementById("qrcode"), {
+                    text: `http://localhost:5000/verify-ticket?ticketId=${ticketId}`,
+                    width: 100,
+                    height: 100
+                });
+
+            } catch (error) {
+                console.error("❌ Error fetching booking:", error);
+                alert("❌ Booking not found. Please check your Ticket ID.");
+                window.location.href = "index.html"; 
+            }
+        });
+
+        function downloadTicket(preview = false) {
+            // Check if jsPDF is available
+            if (!window.jspdf?.jsPDF) {
+                alert("Error: jsPDF library is not loaded.");
+                return;
+            }
+        
+            const doc = new window.jspdf.jsPDF("p", "mm", [105, 200]);
+        
+            // Header Section (Blue Background with White Text)
+            doc.setFillColor(30, 144, 255);
+            doc.rect(0, 0, 105, 20, "F");
+            doc.setTextColor(255); // Set text to white for header
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(14);
+            doc.text("Pilgrimage Ticket", 20, 12);
+        
+            let yPos = 30; // Initial Y position for text
+        
+            // **RESET TEXT COLOR TO BLACK** (Fix for invisible text)
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(10);
+        
+            // Fields to Print
+            const fields = {
+                "Buyer Name": "buyerName",
+                "Mobile Number": "mobileNumber",
+                "Email": "email",
+                "Aadhaar Number": "aadharNumber",
+                "Temple": "temple",
+                "Date": "date",
+                "Time": "time",
+                "Ticket ID": "ticketId",
+                "Transaction ID": "transactionId"
+            };
+        
+            // Print Each Field (Now in Black)
+            Object.entries(fields).forEach(([label, id]) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    doc.text(`${label}: ${element.innerText}`, 10, yPos);
+                    yPos += 8; // Adjust line spacing for better readability
+                }
+            });
+        
+            yPos += 10;
+        
+            // Add QR Code if available
+            const qrCanvas = document.querySelector("#qrcode canvas");
+            if (qrCanvas) {
+                doc.addImage(qrCanvas.toDataURL("image/png"), "PNG", 35, yPos, 35, 35);
+                yPos += 50; // Adjust position after QR code
+            }
+        
+            // Footer Section (Black Text)
+            doc.text("Scan the QR Code to verify your ticket", 10, yPos + 5);
+            doc.text("Visit www.pilgrimagebooking.com", 10, yPos + 15);
+        
+            // Get Ticket ID for Filename
+            const ticketId = document.getElementById("ticketId")?.innerText || "Unknown";
+        
+            // Preview or Download
+            if (preview) {
+                doc.output("dataurlnewwindow"); // Open in new tab
+            } else {
+                doc.save(`Pilgrimage_Ticket_${ticketId}.pdf`);
+            }
+        }        
+    </script>
+</body>
+</html>

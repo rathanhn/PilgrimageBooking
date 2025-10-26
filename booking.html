@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Slot</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://kit.fontawesome.com/519836b792.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+    <script src="notifications.js"></script>
+    <script src="popup-loader.js"></script>
+    <script src="js/config.js"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Pilgrimage Online Ticket Booking</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link " href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="booking.html">Book Slot</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="track.html">Track Ticket</a>
+                    </li>
+                    <!-- Login Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="loginDropdown">
+                            Login
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="loginDropdown">
+                            <li><a class="dropdown-item" href="user-dashboard.html">User Dashboard</a></li>
+                            <li><a class="dropdown-item" href="admin-dashboard.html">Admin Dashboard</a></li>
+                        </ul>
+                    </li>
+                    <!-- Notification Icon + Panel -->
+                    <div class="notification-wrapper">
+                        <div id="notificationIcon">
+                        <button onclick="toggleNotifications()" class="notification-button">
+                            <img src="bell-white.svg" alt="Notifications" class="notification-icon" />
+                            <span class="notification-count" id="notificationCount">0</span>
+                        </button>
+                        </div>
+                    
+                        <div class="notification-panel glass-panel" id="notificationPanel" style="display: none;">
+                        <h4><img src="bell-white.svg" class="mini-bell" /> Notifications</h4>
+                        <hr />
+                        <div id="notificationList" class="notification-list-box"></div>
+                        <button class="btn btn-sm btn-danger mt-4 w-100" onclick="clearAllNotifications()">Clear All</button>
+                        </div>
+                    </div>                      
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+<!-- Booking Form -->
+<section id="book" class="container mt-5 pt-5">
+    <div class="translucent-box mx-auto" style="max-width: 600px;">
+        <h2 class="text-center mb-4">Book Your Slot</h2>
+        <form id="bookingForm" onsubmit="submitBooking(event)">
+            <div class="mb-3">
+                <label for="temple" class="form-label">Select Temple:</label>
+                <select id="temple" class="form-control">
+                    <option value="Sri Kshetra Dharmasthala">Sri Kshetra Dharmasthala</option>
+                    <option value="Murdeshwar">Murdeshwar</option>
+                    <option value="Tirumala Temple">Tirumala Temple</option>
+                    <option value="Madurai Meenakshi Temple">Madurai Meenakshi Temple</option>
+                    <option value="Shri Kedarnath Jyotirlinga Temple">Shri Kedarnath Jyotirlinga Temple</option>
+                  </select>                  
+            </div>
+
+            <div class="mb-3">
+                <label for="date" class="form-label">Select Date:</label>
+                <input type="date" id="date" name="date" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="time" class="form-label">Select Time:</label>
+                <input type="time" id="time" name="time" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Ticket Buyer Name:</label>
+                <input type="text" id="name" name="name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="mobile" class="form-label">Mobile Number:</label>
+                <input type="tel" id="mobile" name="mobile" class="form-control" pattern="[0-9]{10}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" id="email" name="email" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="aadhaar" class="form-label">Full Aadhaar Number (12 digits):</label>
+                <input type="text" id="aadhaar" name="aadhaar" class="form-control" pattern="\d{12}" required>
+            </div>
+
+            <button type="submit" class="btn btn-success w-100">Proceed To Pay</button>
+        </form>
+
+        <div id="successMessage" class="alert alert-success mt-3" style="display: none;">
+            Booking confirmed! Your Ticket ID: <strong id="ticketIdDisplay"></strong> <br>
+            Redirecting to payment...
+        </div>
+    </div>
+
+    <div id="globalLoginPopupContainer"></div>
+
+</section>
+
+<!-- Dummy Payment Modal -->
+<div id="paymentModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3>UPI Payment Window</h3>
+        <p>Enter UPI ID to simulate payment</p>
+        <input type="text" id="upiId" placeholder="Enter UPI ID (e.g., name@bank)" required>
+        <button class="btn btn-success" onclick="confirmPayment()">Pay ₹499</button>
+        <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const user = JSON.parse(localStorage.getItem("loggedInUser")); // Make sure key is consistent
+        if (user) {
+            document.getElementById('name').value = user.username || '';
+            document.getElementById('mobile').value = user.mobile || '';
+            document.getElementById('email').value = user.email || '';
+        } else {
+
+            sessionStorage.setItem("redirectAfterLogin", window.location.href);
+            showLoginPopup(); // then show the popup
+
+        }
+      
+        document.getElementById("paymentModal").style.display = "none";
+
+        const selectedTemple = localStorage.getItem("selectedTemple");
+
+        if (selectedTemple) {
+          const dropdown = document.getElementById("temple");
+          for (let option of dropdown.options) {
+            if (option.value === selectedTemple) {
+              option.selected = true;
+              break;
+            }
+          }
+    
+          // ✅ Clear localStorage immediately
+          localStorage.removeItem("selectedTemple");
+        }
+    
+        // Optional: Save again if user changes dropdown
+        document.getElementById("temple").addEventListener("change", (e) => {
+          localStorage.setItem("selectedTemple", e.target.value);
+        });
+      });      
+
+    function showLoginPopup() {
+        // Check if already loaded
+        if (document.getElementById('loginPopup')) {
+          document.getElementById('loginPopup').style.display = 'flex';
+          document.getElementById('loginUsername')?.focus();
+          return;
+        }
+      
+        // Load login-popup.html and inject into page
+        fetch('login-popup.html')
+          .then(response => response.text())
+          .then(html => {
+            document.getElementById('globalLoginPopupContainer').innerHTML = html;
+            document.getElementById('loginPopup').style.display = 'flex';
+            document.getElementById('loginUsername')?.focus();
+          })
+          .catch(err => console.error('Failed to load login popup:', err));
+      }
+    
+    // ✅ Client-side validation function
+    function validateBookingForm() {
+        const temple = document.getElementById("temple").value;
+        const date = document.getElementById("date").value;
+        const time = document.getElementById("time").value;
+        const name = document.getElementById("name").value.trim();
+        const mobile = document.getElementById("mobile").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const aadhaar = document.getElementById("aadhaar").value.trim();
+
+        // Check if all fields are filled
+        if (!temple || !date || !time || !name || !mobile || !email || !aadhaar) {
+            alert("⚠️ Please fill in all required fields.");
+            return false;
+        }
+
+        // Validate mobile number (10 digits)
+        if (!/^\d{10}$/.test(mobile)) {
+            alert("⚠️ Please enter a valid 10-digit mobile number.");
+            return false;
+        }
+
+        // Validate email format
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            alert("⚠️ Please enter a valid email address.");
+            return false;
+        }
+
+        // Validate Aadhaar number (12 digits)
+        if (!/^\d{12}$/.test(aadhaar)) {
+            alert("⚠️ Please enter a valid 12-digit Aadhaar number.");
+            return false;
+        }
+
+        // Validate date (not in the past)
+        const selectedDate = new Date(date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (selectedDate < today) {
+            alert("⚠️ Please select a future date for your booking.");
+            return false;
+        }
+
+        return true;
+    }
+
+    async function submitBooking(event) {
+        event.preventDefault();
+        
+        // ✅ Validate form before submission
+        if (!validateBookingForm()) {
+            return;
+        }
+
+        // ✅ Show loading state
+        const submitButton = event.target.querySelector('button[type="submit"]');
+        const originalText = submitButton.textContent;
+        submitButton.textContent = "Processing...";
+        submitButton.disabled = true;
+
+        try {
+            const { response, data } = await AppConfig.makeApiRequest(AppConfig.ENDPOINTS.BOOK, {
+                method: "POST",
+                body: JSON.stringify({
+                    temple: document.getElementById("temple").value,
+                    date: document.getElementById("date").value,
+                    time: document.getElementById("time").value,
+                    name: document.getElementById("name").value.trim(),
+                    mobile: document.getElementById("mobile").value.trim(),
+                    email: document.getElementById("email").value.trim(),
+                    aadhaar: document.getElementById("aadhaar").value.trim()
+                })
+            });
+
+            console.log("🔍 API Response:", data);
+
+            if (!data.success || !data.booking?.ticketId) {
+                throw new Error("Ticket ID not received from server!");
+            }
+
+            const ticketId = data.booking.ticketId;
+            document.getElementById("ticketIdDisplay").innerText = ticketId;
+            document.getElementById("successMessage").style.display = "block";
+
+            setTimeout(() => showPaymentModal(ticketId), 2000);
+        } catch (error) {
+            console.error("❌ Booking Error:", error);
+            alert("⚠️ Booking failed. Please try again.");
+        } finally {
+            // ✅ Restore button state
+            submitButton.textContent = originalText;
+            submitButton.disabled = false;
+        }
+    }
+
+    function showPaymentModal(ticketId) {
+        document.getElementById("paymentModal").style.display = "flex";
+    }
+
+    function closeModal() {
+        document.getElementById("paymentModal").style.display = "none";
+    }
+
+    function confirmPayment() {
+        const upiId = document.getElementById("upiId").value.trim();
+        if (!upiId || !/^[\w.-]+@[\w.-]+$/.test(upiId)) {
+            alert("⚠️ Invalid UPI ID! Format should be something like name@bank");
+            return;
+        }
+
+        const ticketId = document.getElementById("ticketIdDisplay").innerText;
+        window.location.href = `confirmation.html?ticketId=${ticketId}`;
+    }
+</script>
+
+</body>
+</html>
